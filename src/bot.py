@@ -146,6 +146,7 @@ def send_status(message: dict) -> None:
 
 @bot.message_handler(commands=['start', 'info'])
 def send_start(message: dict) -> None:
+    global ADMIN_USERNAME
     chat_id = message.chat.id
     thread_id = message.message_thread_id
     possible_admin = get_tg_username(message)
