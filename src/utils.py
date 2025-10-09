@@ -35,6 +35,13 @@ def match_urls(urls: list[str], text: str) -> Match:
     return match(fr"(({'|'.join(urls)})\S*)\s*(.*)", text)
 
 
+def get_tg_username(message: dict) -> str:
+    if message.forward_from:
+        return message.forward_from.username
+    else:
+        return message.from_user.username
+
+
 def crop_to_vertical(
         image_bytes: bytes,
         save_path: str,

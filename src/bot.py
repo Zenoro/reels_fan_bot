@@ -2,7 +2,7 @@ import threading
 from re import Match
 import os
 from dotenv import load_dotenv, dotenv_values
-from telebot import TeleBot, apihelper
+import telebot
 import yt_dlp
 from params import *
 from utils import *
@@ -12,7 +12,7 @@ from sqlite3 import connect, Cursor
 # Загрузка переменных окружения из .env файла
 load_dotenv()
 values = dotenv_values()
-bot = TeleBot(values['BOT_TOKEN'])
+bot = telebot.TeleBot(values['BOT_TOKEN'])
 
 names = {
     'рилс': 'reels',
@@ -22,16 +22,12 @@ names = {
 
 
 class VideoHandler:
-    def __init__(self, bot: TeleBot, message: dict, type: str) -> None:
+    def __init__(self, bot: telebot.TeleBot, message: dict, type: str) -> None:
         self.bot = bot
         self.message = message
         self.chat_id = message.chat.id
         self.thread_id = message.message_thread_id
-        self.username = (
-            message.forward_from.username
-            if message.forward_from
-            else message.from_user.username
-        )
+        self.username = get_tg_username(message)
         self.type = type
 
     def preprocess(self, wait_text: str) -> None:
@@ -109,7 +105,7 @@ class VideoHandler:
         self.download_and_send_video()
 
 
-@bot.message_handler(func=lambda msg: msg.text.startswith('https://'))
+@bot.message_handler(func=lambda msg: match_urls(YT_URLS+IG_URLS+VK_URLS, msg.text))
 def handle_urls(message: dict) -> None:
     if (matched := match_urls(YT_URLS, message.text)):
         type = IS_SHORTS and 'шортс'
@@ -117,10 +113,7 @@ def handle_urls(message: dict) -> None:
         type = IS_REELS and 'рилс'
     elif (matched := match_urls(VK_URLS, message.text)):
         type = IS_VKCLIPS and 'вк клип'
-    else:
-        bot.reply_to(message=message,
-                     text="Неподдерживаемая ссылка")
-        return
+
     if type:
         VideoHandler(bot, message, type).process(matched)
     else:
@@ -144,7 +137,8 @@ def send_status(message: dict) -> None:
               f"🤤 Количество скачанных рилсов: {REELS_CNT}\n" \
               f"🩳 Количество скачанных шортсов: {SHORTS_CNT}\n" \
               f"🤯 Количество скачанных ВК КЛИПОВ: {VKCLIPS_CNT}\n" \
-              f"❌ Количество ошибок: {ERR_CNT}"
+              f"❌ Количество ошибок: {ERR_CNT}" \
+              f"🧑‍💻 Администратор бота: {ADMIN_USERNAME}"
     bot.send_message(chat_id=chat_id,
                      message_thread_id=thread_id,
                      text=bottext)
@@ -152,8 +146,12 @@ def send_status(message: dict) -> None:
 
 @bot.message_handler(commands=['start', 'info'])
 def send_start(message: dict) -> None:
+    global ADMIN_USERNAME
     chat_id = message.chat.id
     thread_id = message.message_thread_id
+    possible_admin = get_tg_username(message)
+    if not ADMIN_USERNAME:
+        ADMIN_USERNAME = possible_admin
     bottext = "🤖 Привет! Основные команды бота:\n" \
               "📊 /status: узнать статистику по работе бота\n" \
               "⚙️ /settings: узнать настройки работы бота\n"
@@ -196,7 +194,7 @@ def send_settings(message: dict) -> None:
 try:
     print_log("Bot started")
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
-except apihelper.ApiException as e:
+except telebot.apihelper.ApiException as e:
     print_log(f"API Exception occurred: {e}", "error")
     # print("Bot is already running on another device. Exiting.")
 except Exception as e:

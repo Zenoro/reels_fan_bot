@@ -19,3 +19,6 @@ IS_THUMBS = True
 IS_SHORTS = True
 IS_REELS = True
 IS_VKCLIPS = True
+
+# TG bot administrator ID
+ADMIN_USERNAME = None
