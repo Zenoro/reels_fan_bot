@@ -137,7 +137,8 @@ def send_status(message: dict) -> None:
               f"🤤 Количество скачанных рилсов: {REELS_CNT}\n" \
               f"🩳 Количество скачанных шортсов: {SHORTS_CNT}\n" \
               f"🤯 Количество скачанных ВК КЛИПОВ: {VKCLIPS_CNT}\n" \
-              f"❌ Количество ошибок: {ERR_CNT}"
+              f"❌ Количество ошибок: {ERR_CNT}" \
+              f"🧑‍💻 Администратор бота: {ADMIN_USERNAME}"
     bot.send_message(chat_id=chat_id,
                      message_thread_id=thread_id,
                      text=bottext)
@@ -147,6 +148,9 @@ def send_status(message: dict) -> None:
 def send_start(message: dict) -> None:
     chat_id = message.chat.id
     thread_id = message.message_thread_id
+    possible_admin = get_tg_username(message)
+    if not ADMIN_USERNAME:
+        ADMIN_USERNAME = possible_admin
     bottext = "🤖 Привет! Основные команды бота:\n" \
               "📊 /status: узнать статистику по работе бота\n" \
               "⚙️ /settings: узнать настройки работы бота\n"
