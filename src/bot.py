@@ -146,6 +146,7 @@ def send_status(message: dict) -> None:
 
 @bot.message_handler(commands=['start', 'info'])
 def send_start(message: dict) -> None:
+    global ADMIN_USERNAME
     chat_id = message.chat.id
     thread_id = message.message_thread_id
     possible_admin = get_tg_username(message)
@@ -192,6 +193,7 @@ def send_settings(message: dict) -> None:
 @bot.message_handler(commands=['admin'])
 def customize_bot(message):
     chat_id = message.chat.id
+    thread_id = message.message_thread_id
     if get_tg_username(message) == ADMIN_USERNAME:
         keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
         reels_button = telebot.types.KeyboardButton(text=f"{'Выключить' if IS_REELS else 'Включить'} Рилсы")
@@ -206,10 +208,12 @@ def customize_bot(message):
         )
         bot.send_message(chat_id,
                         f'Добро пожаловать в админскую панель, @{ADMIN_USERNAME}',
+                        message_thread_id=thread_id,
                         reply_markup=keyboard)
     else:
         bot.send_message(chat_id,
-                         f"У вас нет прав на изменения бота. Напишите @{ADMIN_USERNAME}",
+                        f"У вас нет прав на изменения бота. Напишите @{ADMIN_USERNAME}",
+                        message_thread_id=thread_id
         )
 
 @bot.message_handler(func=lambda message: get_tg_username(message) == ADMIN_USERNAME and message.text in [
