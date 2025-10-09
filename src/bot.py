@@ -109,7 +109,7 @@ class VideoHandler:
         self.download_and_send_video()
 
 
-@bot.message_handler(func=lambda msg: msg.text.startswith('https://'))
+@bot.message_handler(func=lambda msg: match_urls(YT_URLS+IG_URLS+VK_URLS, msg.text))
 def handle_urls(message: dict) -> None:
     if (matched := match_urls(YT_URLS, message.text)):
         type = IS_SHORTS and 'шортс'
@@ -117,10 +117,7 @@ def handle_urls(message: dict) -> None:
         type = IS_REELS and 'рилс'
     elif (matched := match_urls(VK_URLS, message.text)):
         type = IS_VKCLIPS and 'вк клип'
-    else:
-        bot.reply_to(message=message,
-                     text="Неподдерживаемая ссылка")
-        return
+
     if type:
         VideoHandler(bot, message, type).process(matched)
     else:
