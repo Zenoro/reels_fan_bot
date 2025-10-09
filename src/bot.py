@@ -189,6 +189,65 @@ def send_settings(message: dict) -> None:
                      text=bottext)
 
 
+@bot.message_handler(commands=['admin'])
+def customize_bot(message):
+    chat_id = message.chat.id
+    if get_tg_username(message) == ADMIN_USERNAME:
+        keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+        reels_button = telebot.types.KeyboardButton(text=f"{'Выключить' if IS_REELS else 'Включить'} Рилсы")
+        shorts_button = telebot.types.KeyboardButton(text=f"{'Выключить' if IS_SHORTS else 'Включить'} Шортсы")
+        vk_button = telebot.types.KeyboardButton(text=f"{'Выключить' if IS_VKCLIPS else 'Включить'} ВК клипы")
+        cover_button = telebot.types.KeyboardButton(text=f"{'Выключить' if IS_THUMBS else 'Включить'} обложки")
+        keyboard.add(
+            reels_button,
+            shorts_button,
+            vk_button,
+            cover_button
+        )
+        bot.send_message(chat_id,
+                        f'Добро пожаловать в админскую панель, @{ADMIN_USERNAME}',
+                        reply_markup=keyboard)
+    else:
+        bot.send_message(chat_id,
+                         f"У вас нет прав на изменения бота. Напишите @{ADMIN_USERNAME}",
+        )
+
+@bot.message_handler(func=lambda message: get_tg_username(message) == ADMIN_USERNAME and message.text in [
+    "Включить Рилсы", "Выключить Рилсы",
+    "Включить Шортсы", "Выключить Шортсы",
+    "Включить ВК клипы", "Выключить ВК клипы",
+    "Включить обложки", "Выключить обложки"
+])
+def admin_toggle(message):
+    global IS_REELS, IS_SHORTS, IS_VKCLIPS, IS_THUMBS
+    response = ""
+    if message.text == "Включить Рилсы":
+        IS_REELS = True
+        response = "Рилсы включены."
+    elif message.text == "Выключить Рилсы":
+        IS_REELS = False
+        response = "Рилсы выключены."
+    elif message.text == "Включить Шортсы":
+        IS_SHORTS = True
+        response = "Шортсы включены."
+    elif message.text == "Выключить Шортсы":
+        IS_SHORTS = False
+        response = "Шортсы выключены."
+    elif message.text == "Включить ВК клипы":
+        IS_VKCLIPS = True
+        response = "ВК клипы включены."
+    elif message.text == "Выключить ВК клипы":
+        IS_VKCLIPS = False
+        response = "ВК клипы выключены."
+    elif message.text == "Включить обложки":
+        IS_THUMBS = True
+        response = "Обложки включены."
+    elif message.text == "Выключить обложки":
+        IS_THUMBS = False
+        response = "Обложки выключены."
+    bot.send_message(message.chat.id, response)
+
+
 # Start polling the bot
 try:
     print_log("Bot started")
