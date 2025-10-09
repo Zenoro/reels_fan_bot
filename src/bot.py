@@ -2,7 +2,7 @@ import threading
 from re import Match
 import os
 from dotenv import load_dotenv, dotenv_values
-from telebot import TeleBot, apihelper
+import telebot
 import yt_dlp
 from params import *
 from utils import *
@@ -12,7 +12,7 @@ from sqlite3 import connect, Cursor
 # Загрузка переменных окружения из .env файла
 load_dotenv()
 values = dotenv_values()
-bot = TeleBot(values['BOT_TOKEN'])
+bot = telebot.TeleBot(values['BOT_TOKEN'])
 
 names = {
     'рилс': 'reels',
@@ -22,7 +22,7 @@ names = {
 
 
 class VideoHandler:
-    def __init__(self, bot: TeleBot, message: dict, type: str) -> None:
+    def __init__(self, bot: telebot.TeleBot, message: dict, type: str) -> None:
         self.bot = bot
         self.message = message
         self.chat_id = message.chat.id
@@ -193,7 +193,7 @@ def send_settings(message: dict) -> None:
 try:
     print_log("Bot started")
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
-except apihelper.ApiException as e:
+except telebot.apihelper.ApiException as e:
     print_log(f"API Exception occurred: {e}", "error")
     # print("Bot is already running on another device. Exiting.")
 except Exception as e:
