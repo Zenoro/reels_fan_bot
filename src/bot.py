@@ -27,11 +27,7 @@ class VideoHandler:
         self.message = message
         self.chat_id = message.chat.id
         self.thread_id = message.message_thread_id
-        self.username = (
-            message.forward_from.username
-            if message.forward_from
-            else message.from_user.username
-        )
+        self.username = get_tg_username(message)
         self.type = type
 
     def preprocess(self, wait_text: str) -> None:
